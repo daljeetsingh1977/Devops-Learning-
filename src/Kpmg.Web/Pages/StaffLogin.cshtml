@@ -1,0 +1,29 @@
+@page
+@model StaffLoginModel
+@{
+    ViewData["Title"] = "Customer service sign in";
+    var returnUrl = Request.Query["ReturnUrl"].ToString();
+}
+
+<h1>Customer service portal</h1>
+<p>Sign in with your team access code to view and work on citizen requests.</p>
+
+<div asp-validation-summary="All" class="text-danger"></div>
+
+<form method="post" asp-route-returnUrl="@returnUrl" class="col-md-6">
+    <div class="mb-3">
+        <label asp-for="Input.StaffName" class="form-label"></label>
+        <input asp-for="Input.StaffName" class="form-control" autocomplete="off" />
+        <span asp-validation-for="Input.StaffName" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Input.AccessCode" class="form-label"></label>
+        <input asp-for="Input.AccessCode" class="form-control" autocomplete="off" />
+        <span asp-validation-for="Input.AccessCode" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Sign in</button>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

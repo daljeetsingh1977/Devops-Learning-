@@ -1,0 +1,59 @@
+@page
+@model Kpmg.Web.Pages.Staff.IndexModel
+@{
+    ViewData["Title"] = "Service requests";
+}
+
+<h1>Service requests</h1>
+
+<form method="get" class="row g-2 mb-3">
+    <div class="col-auto">
+        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<ComplaintStatus>()">
+            <option value="">All statuses</option>
+        </select>
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-outline-primary">Filter</button>
+    </div>
+</form>
+
+@if (Model.Complaints.Count == 0)
+{
+    <p class="text-muted">There are no requests to show.</p>
+}
+else
+{
+    <table class="table table-striped align-middle">
+        <thead>
+        <tr>
+            <th>Request</th>
+            <th>Issue</th>
+            <th>Council</th>
+            <th>Reported (UTC)</th>
+            <th>Photos</th>
+            <th>Status</th>
+            <th></th>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var complaint in Model.Complaints)
+        {
+            <tr>
+                <td>@complaint.RequestNumber</td>
+                <td>@complaint.Category</td>
+                <td>
+                    @complaint.CouncilName
+                    @if (!complaint.CouncilNotified)
+                    {
+                        <span class="badge bg-warning text-dark">email pending</span>
+                    }
+                </td>
+                <td>@complaint.CreatedAtUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm")</td>
+                <td>@complaint.Photos.Count</td>
+                <td>@complaint.Status</td>
+                <td><a class="btn btn-sm btn-primary" asp-page="./Details" asp-route-id="@complaint.Id">Work on it</a></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}
