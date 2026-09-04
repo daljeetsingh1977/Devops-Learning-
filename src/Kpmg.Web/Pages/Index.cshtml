@@ -1,0 +1,92 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Report a local issue";
+}
+
+<h1>Report a local issue</h1>
+<p class="lead">
+    Tell your local council about potholes, garbage on the road, broken roads, missing street lights and other civic
+    problems. Add photographs and we will send the report to the council responsible for your location.
+</p>
+
+<div asp-validation-summary="All" class="alert alert-danger" role="alert" style="display:@(ViewData.ModelState.IsValid ? "none" : "block")"></div>
+
+<form method="post" enctype="multipart/form-data" novalidate>
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label asp-for="Input.Category" class="form-label"></label>
+            <select asp-for="Input.Category" class="form-select"
+                    asp-items="Html.GetEnumSelectList<ComplaintCategory>()">
+                <option value="">-- Select an issue --</option>
+            </select>
+            <span asp-validation-for="Input.Category" class="text-danger"></span>
+        </div>
+        <div class="col-md-6 mb-3">
+            <label asp-for="Input.LocationDescription" class="form-label"></label>
+            <input asp-for="Input.LocationDescription" class="form-control" placeholder="e.g. outside 14 High Street" />
+            <span asp-validation-for="Input.LocationDescription" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label asp-for="Input.Description" class="form-label"></label>
+        <textarea asp-for="Input.Description" class="form-control" rows="4"
+                  placeholder="Describe the problem, how long it has been there and any safety concerns."></textarea>
+        <span asp-validation-for="Input.Description" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label for="photos" class="form-label">Photographs (up to 5 images, 5&nbsp;MB each)</label>
+        <input type="file" id="photos" name="Photos" class="form-control" multiple accept="image/*" />
+        <div class="form-text">JPEG, PNG, WEBP or HEIC images taken at the location help the council triage the issue.</div>
+    </div>
+
+    <fieldset class="border rounded p-3 mb-3">
+        <legend class="h6">Your location</legend>
+        <p id="geo-status" class="text-muted mb-2">Requesting your location from the browser&hellip;</p>
+        <div class="row">
+            <div class="col-md-4 mb-2">
+                <label asp-for="Input.Latitude" class="form-label">Latitude</label>
+                <input asp-for="Input.Latitude" id="latitude" class="form-control" step="any" />
+                <span asp-validation-for="Input.Latitude" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mb-2">
+                <label asp-for="Input.Longitude" class="form-label">Longitude</label>
+                <input asp-for="Input.Longitude" id="longitude" class="form-control" step="any" />
+                <span asp-validation-for="Input.Longitude" class="text-danger"></span>
+            </div>
+            <div class="col-md-4 mb-2 d-flex align-items-end">
+                <button type="button" id="capture-location" class="btn btn-outline-secondary w-100">
+                    Use my current location
+                </button>
+            </div>
+        </div>
+    </fieldset>
+
+    <div class="row">
+        <div class="col-md-4 mb-3">
+            <label asp-for="Input.ReporterName" class="form-label"></label>
+            <input asp-for="Input.ReporterName" class="form-control" />
+            <span asp-validation-for="Input.ReporterName" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="Input.ReporterEmail" class="form-label"></label>
+            <input asp-for="Input.ReporterEmail" class="form-control" />
+            <span asp-validation-for="Input.ReporterEmail" class="text-danger"></span>
+        </div>
+        <div class="col-md-4 mb-3">
+            <label asp-for="Input.ReporterPhone" class="form-label"></label>
+            <input asp-for="Input.ReporterPhone" class="form-control" />
+            <span asp-validation-for="Input.ReporterPhone" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Submit report</button>
+    <a class="btn btn-link" asp-page="/Track">Track an existing request</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/geolocation.js" asp-append-version="true"></script>
+}

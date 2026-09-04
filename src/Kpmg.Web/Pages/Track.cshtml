@@ -1,0 +1,49 @@
+@page
+@model TrackModel
+@{
+    ViewData["Title"] = "Track a request";
+}
+
+<h1>Track a request</h1>
+<p>Enter the service request number you received when you submitted your report.</p>
+
+<form method="get" class="row g-2 mb-4">
+    <div class="col-auto">
+        <label asp-for="RequestNumber" class="visually-hidden"></label>
+        <input asp-for="RequestNumber" class="form-control" placeholder="CSR-20260904-ABC123" />
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Track</button>
+    </div>
+</form>
+
+@if (Model.RequestNotFound)
+{
+    <div class="alert alert-warning">We could not find a request with that number. Please check it and try again.</div>
+}
+else if (Model.Complaint is not null)
+{
+    <div class="card">
+        <div class="card-header">
+            @Model.Complaint.RequestNumber &ndash; <span class="badge bg-secondary">@Model.Complaint.Status</span>
+        </div>
+        <div class="card-body">
+            <dl class="row mb-0">
+                <dt class="col-sm-3">Issue</dt>
+                <dd class="col-sm-9">@Model.Complaint.Category</dd>
+
+                <dt class="col-sm-3">Reported</dt>
+                <dd class="col-sm-9">@Model.Complaint.CreatedAtUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+
+                <dt class="col-sm-3">Council</dt>
+                <dd class="col-sm-9">@Model.Complaint.CouncilName</dd>
+
+                <dt class="col-sm-3">Last updated</dt>
+                <dd class="col-sm-9">@Model.Complaint.UpdatedAtUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm") UTC</dd>
+
+                <dt class="col-sm-3">Description</dt>
+                <dd class="col-sm-9">@Model.Complaint.Description</dd>
+            </dl>
+        </div>
+    </div>
+}

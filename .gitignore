@@ -1,0 +1,15 @@
+## .NET build output
+bin/
+obj/
+
+## Runtime data (SQLite database, uploaded photos, generated emails)
+App_Data/
+
+## User specific / IDE files
+.vs/
+.vscode/
+*.user
+*.suo
+
+## Local secrets
+appsettings.*.local.json

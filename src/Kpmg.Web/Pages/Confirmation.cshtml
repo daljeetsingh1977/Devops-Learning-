@@ -1,0 +1,41 @@
+@page
+@model ConfirmationModel
+@{
+    ViewData["Title"] = "Report submitted";
+}
+
+<div class="alert alert-success">
+    <h1 class="h4">Thank you &ndash; your report has been submitted</h1>
+    <p class="mb-0">
+        Your service request number is <strong>@Model.Complaint.RequestNumber</strong>.
+        Please keep it safe: you can use it to track progress at any time.
+    </p>
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Issue</dt>
+    <dd class="col-sm-9">@Model.Complaint.Category</dd>
+
+    <dt class="col-sm-3">Routed to</dt>
+    <dd class="col-sm-9">@Model.Complaint.CouncilName (@Model.Complaint.CouncilEmail)</dd>
+
+    <dt class="col-sm-3">Location</dt>
+    <dd class="col-sm-9">@Model.Complaint.Latitude.ToString("0.######"), @Model.Complaint.Longitude.ToString("0.######")</dd>
+
+    <dt class="col-sm-3">Photographs</dt>
+    <dd class="col-sm-9">@Model.Complaint.Photos.Count attached</dd>
+
+    <dt class="col-sm-3">Status</dt>
+    <dd class="col-sm-9">@Model.Complaint.Status</dd>
+</dl>
+
+@if (!Model.Complaint.CouncilNotified)
+{
+    <div class="alert alert-warning">
+        We could not email the council straight away. Your report is safely recorded and our customer service team will
+        forward it.
+    </div>
+}
+
+<a class="btn btn-primary" asp-page="/Track" asp-route-requestNumber="@Model.Complaint.RequestNumber">Track this request</a>
+<a class="btn btn-outline-secondary" asp-page="/Index">Report another issue</a>

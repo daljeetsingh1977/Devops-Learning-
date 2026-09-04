@@ -1,0 +1,86 @@
+@page "{id:int}"
+@model Kpmg.Web.Pages.Staff.DetailsModel
+@{
+    ViewData["Title"] = $"Request {Model.Complaint.RequestNumber}";
+    var latitude = Model.Complaint.Latitude.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);
+    var longitude = Model.Complaint.Longitude.ToString("0.######", System.Globalization.CultureInfo.InvariantCulture);
+}
+
+@if (TempData["StatusMessage"] is string statusMessage)
+{
+    <div class="alert alert-success">@statusMessage</div>
+}
+
+<h1 class="h3">@Model.Complaint.RequestNumber</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Issue</dt>
+    <dd class="col-sm-9">@Model.Complaint.Category</dd>
+
+    <dt class="col-sm-3">Description</dt>
+    <dd class="col-sm-9">@Model.Complaint.Description</dd>
+
+    <dt class="col-sm-3">Reported by</dt>
+    <dd class="col-sm-9">@Model.Complaint.ReporterName &lt;@Model.Complaint.ReporterEmail&gt; @Model.Complaint.ReporterPhone</dd>
+
+    <dt class="col-sm-3">Location</dt>
+    <dd class="col-sm-9">
+        @latitude, @longitude
+        <a href="https://www.openstreetmap.org/?mlat=@latitude&amp;mlon=@longitude" target="_blank" rel="noopener noreferrer">view on map</a>
+        @if (!string.IsNullOrWhiteSpace(Model.Complaint.LocationDescription))
+        {
+            <span>&ndash; @Model.Complaint.LocationDescription</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Routed to</dt>
+    <dd class="col-sm-9">
+        @Model.Complaint.CouncilName (@Model.Complaint.CouncilEmail)
+        @if (!Model.Complaint.CouncilNotified)
+        {
+            <span class="badge bg-warning text-dark">email pending</span>
+        }
+    </dd>
+
+    <dt class="col-sm-3">Reported (UTC)</dt>
+    <dd class="col-sm-9">@Model.Complaint.CreatedAtUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm")</dd>
+</dl>
+
+<h2 class="h5">Photographs</h2>
+@if (Model.Complaint.Photos.Count == 0)
+{
+    <p class="text-muted">No photographs were attached.</p>
+}
+else
+{
+    <div class="row mb-3">
+        @foreach (var photo in Model.Complaint.Photos)
+        {
+            <div class="col-6 col-md-3 mb-2">
+                <a href="/staff/photos/@photo.Id" target="_blank" rel="noopener noreferrer">
+                    <img src="/staff/photos/@photo.Id" class="img-fluid rounded border" alt="@photo.OriginalFileName" />
+                </a>
+                <small class="text-muted d-block text-truncate">@photo.OriginalFileName</small>
+            </div>
+        }
+    </div>
+}
+
+<h2 class="h5">Work on this request</h2>
+<form method="post" class="col-md-6">
+    <div class="mb-3">
+        <label asp-for="Status" class="form-label">Status</label>
+        <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<ComplaintStatus>()"></select>
+    </div>
+    <div class="mb-3">
+        <label asp-for="StaffNotes" class="form-label"></label>
+        <textarea asp-for="StaffNotes" class="form-control" rows="4"></textarea>
+        <span asp-validation-for="StaffNotes" class="text-danger"></span>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a class="btn btn-link" asp-page="./Index">Back to all requests</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
