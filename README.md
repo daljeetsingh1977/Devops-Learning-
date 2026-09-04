@@ -42,3 +42,7 @@ docker run --rm -p 8087:8087 kpmg-web
 ```
 
 Then browse to <http://localhost:8087>.
+
+The listening address is configured in `src/Kpmg.Web/appsettings.json`; it can be
+overridden at runtime, for example with
+`-e Kestrel__Endpoints__Http__Url=http://0.0.0.0:9000`.

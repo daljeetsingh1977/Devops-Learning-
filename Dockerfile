@@ -13,6 +13,6 @@ COPY --from=build /app .
 
 # Kestrel is configured to listen on http://0.0.0.0:8087 in appsettings.json.
 EXPOSE 8087
-USER $APP_UID
+USER app
 
 ENTRYPOINT ["dotnet", "Kpmg.Web.dll"]
