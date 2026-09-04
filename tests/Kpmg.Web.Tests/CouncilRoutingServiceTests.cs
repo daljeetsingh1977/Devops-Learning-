@@ -1,6 +1,5 @@
 using Kpmg.Web.Options;
 using Kpmg.Web.Services;
-using Microsoft.Extensions.Options;
 
 namespace Kpmg.Web.Tests;
 
@@ -67,16 +66,5 @@ public class CouncilRoutingServiceTests
         var route = CreateService(options).ResolveCouncil(51.50, -0.14);
 
         Assert.Equal("Greater London Authority", route.CouncilName);
-    }
-
-    private sealed class StaticOptionsMonitor<T> : IOptionsMonitor<T>
-    {
-        public StaticOptionsMonitor(T value) => CurrentValue = value;
-
-        public T CurrentValue { get; }
-
-        public T Get(string? name) => CurrentValue;
-
-        public IDisposable? OnChange(Action<T, string?> listener) => null;
     }
 }

@@ -11,6 +11,9 @@ public interface IPhotoStorage
 
     /// <summary>Opens a previously stored photo, or returns <c>null</c> when it no longer exists.</summary>
     Stream? OpenRead(string storedFileName);
+
+    /// <summary>Removes a stored photo, ignoring files that are already gone.</summary>
+    void Delete(string storedFileName);
 }
 
 public class FileSystemPhotoStorage : IPhotoStorage
@@ -54,7 +57,24 @@ public class FileSystemPhotoStorage : IPhotoStorage
         return new StoredPhoto(storedFileName, contentType, size);
     }
 
+    public void Delete(string storedFileName)
+    {
+        var fullPath = ResolvePath(storedFileName);
+        if (fullPath is not null && File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+        }
+    }
+
     public Stream? OpenRead(string storedFileName)
+    {
+        var fullPath = ResolvePath(storedFileName);
+        return fullPath is not null && File.Exists(fullPath)
+            ? File.OpenRead(fullPath)
+            : null;
+    }
+
+    private string? ResolvePath(string storedFileName)
     {
         // Defensive: only ever read a bare file name from inside the storage root.
         var safeName = Path.GetFileName(storedFileName);
@@ -63,9 +83,6 @@ public class FileSystemPhotoStorage : IPhotoStorage
             return null;
         }
 
-        var fullPath = Path.Combine(_rootPath, safeName);
-        return File.Exists(fullPath)
-            ? File.OpenRead(fullPath)
-            : null;
+        return Path.Combine(_rootPath, safeName);
     }
 }

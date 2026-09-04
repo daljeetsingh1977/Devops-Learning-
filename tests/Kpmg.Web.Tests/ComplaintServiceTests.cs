@@ -207,6 +207,8 @@ public class ComplaintServiceTests : IDisposable
             return new StoredPhoto(name, contentType, buffer.Length);
         }
 
+        public void Delete(string storedFileName) => SavedFiles.Remove(storedFileName);
+
         public Stream? OpenRead(string storedFileName) =>
             SavedFiles.TryGetValue(storedFileName, out var bytes) ? new MemoryStream(bytes) : null;
     }

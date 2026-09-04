@@ -19,6 +19,16 @@ builder.Services.Configure<PhotoStorageOptions>(builder.Configuration.GetSection
 builder.Services.Configure<EmailOptions>(builder.Configuration.GetSection(EmailOptions.SectionName));
 builder.Services.Configure<StaffPortalOptions>(builder.Configuration.GetSection(StaffPortalOptions.SectionName));
 
+// The customer service team always needs a usable (but never hard coded) access code.
+var generatedStaffAccessCode = Convert.ToHexString(RandomNumberGenerator.GetBytes(8));
+builder.Services.PostConfigure<StaffPortalOptions>(options =>
+{
+    if (string.IsNullOrWhiteSpace(options.AccessCode))
+    {
+        options.AccessCode = generatedStaffAccessCode;
+    }
+});
+
 builder.Services.AddDbContext<ComplaintDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("ComplaintDatabase")
                       ?? "Data Source=App_Data/complaints.db"));
@@ -29,6 +39,7 @@ builder.Services.AddSingleton<IRequestNumberGenerator, RequestNumberGenerator>()
 builder.Services.AddSingleton<IPhotoStorage, FileSystemPhotoStorage>();
 builder.Services.AddSingleton<IEmailSender, PickupDirectoryEmailSender>();
 builder.Services.AddScoped<IComplaintService, ComplaintService>();
+builder.Services.AddSingleton<IStaffAccessCodeValidator, StaffAccessCodeValidator>();
 
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
@@ -38,7 +49,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.Cookie.HttpOnly = true;
         options.Cookie.SameSite = SameSiteMode.Strict;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 builder.Services.AddAuthorization();
 
@@ -50,14 +61,12 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<ComplaintDbContext>();
     db.Database.EnsureCreated();
 
-    // Make sure the customer service team always has a usable (but never hard coded) access code.
-    var staffOptions = scope.ServiceProvider.GetRequiredService<IOptions<StaffPortalOptions>>().Value;
-    if (string.IsNullOrWhiteSpace(staffOptions.AccessCode))
+    var staffOptions = scope.ServiceProvider.GetRequiredService<IOptionsMonitor<StaffPortalOptions>>().CurrentValue;
+    if (staffOptions.AccessCode == generatedStaffAccessCode)
     {
-        staffOptions.AccessCode = Convert.ToHexString(RandomNumberGenerator.GetBytes(8));
         app.Logger.LogWarning(
             "StaffPortal:AccessCode is not configured. Generated a temporary access code for this run: {AccessCode}",
-            staffOptions.AccessCode);
+            generatedStaffAccessCode);
     }
 }
 

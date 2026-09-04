@@ -1,25 +1,22 @@
 using System.ComponentModel.DataAnnotations;
 using System.Security.Claims;
-using System.Security.Cryptography;
-using System.Text;
-using Kpmg.Web.Options;
+using Kpmg.Web.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Options;
 
 namespace Kpmg.Web.Pages;
 
 [AllowAnonymous]
 public class StaffLoginModel : PageModel
 {
-    private readonly IOptions<StaffPortalOptions> _options;
+    private readonly IStaffAccessCodeValidator _accessCodes;
 
-    public StaffLoginModel(IOptions<StaffPortalOptions> options)
+    public StaffLoginModel(IStaffAccessCodeValidator accessCodes)
     {
-        _options = options;
+        _accessCodes = accessCodes;
     }
 
     [BindProperty]
@@ -49,8 +46,7 @@ public class StaffLoginModel : PageModel
             return Page();
         }
 
-        var expected = _options.Value.AccessCode;
-        if (string.IsNullOrEmpty(expected) || !IsMatch(expected, Input.AccessCode))
+        if (!_accessCodes.IsValid(Input.AccessCode))
         {
             ModelState.AddModelError(string.Empty, "That access code is not recognised.");
             return Page();
@@ -70,9 +66,4 @@ public class StaffLoginModel : PageModel
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
         return RedirectToPage("/Index");
     }
-
-    private static bool IsMatch(string expected, string supplied) =>
-        CryptographicOperations.FixedTimeEquals(
-            Encoding.UTF8.GetBytes(expected),
-            Encoding.UTF8.GetBytes(supplied));
 }

@@ -101,21 +101,34 @@ public class ComplaintService : IComplaintService
             UpdatedAtUtc = now
         };
 
-        foreach (var upload in submission.Photos)
+        try
         {
-            await using var stream = upload.OpenReadStream();
-            var stored = await _photoStorage.SaveAsync(stream, upload.ContentType, cancellationToken);
-            complaint.Photos.Add(new ComplaintPhoto
+            foreach (var upload in submission.Photos)
             {
-                OriginalFileName = Path.GetFileName(upload.FileName),
-                StoredFileName = stored.StoredFileName,
-                ContentType = stored.ContentType,
-                SizeInBytes = stored.SizeInBytes
-            });
-        }
+                await using var stream = upload.OpenReadStream();
+                var stored = await _photoStorage.SaveAsync(stream, upload.ContentType, cancellationToken);
+                complaint.Photos.Add(new ComplaintPhoto
+                {
+                    OriginalFileName = Path.GetFileName(upload.FileName),
+                    StoredFileName = stored.StoredFileName,
+                    ContentType = stored.ContentType,
+                    SizeInBytes = stored.SizeInBytes
+                });
+            }
 
-        _db.Complaints.Add(complaint);
-        await _db.SaveChangesAsync(cancellationToken);
+            _db.Complaints.Add(complaint);
+            await _db.SaveChangesAsync(cancellationToken);
+        }
+        catch
+        {
+            // Never leave photo files behind that no complaint record points at.
+            foreach (var photo in complaint.Photos)
+            {
+                _photoStorage.Delete(photo.StoredFileName);
+            }
+
+            throw;
+        }
 
         // A mail transport failure must not lose the citizen's report; staff can still
         // see the request in the portal and re-send it from there.
@@ -203,7 +216,7 @@ public class ComplaintService : IComplaintService
             }
             else if (photo.Length > _photoOptions.MaxFileSizeInBytes)
             {
-                errors.Add($"'{photo.FileName}' is larger than {_photoOptions.MaxFileSizeInBytes / (1024 * 1024)} MB.");
+                errors.Add($"'{photo.FileName}' is larger than {(_photoOptions.MaxFileSizeInBytes / (1024d * 1024)).ToString("0.#", System.Globalization.CultureInfo.InvariantCulture)} MB.");
             }
 
             if (!_photoOptions.AllowedContentTypes.Contains(photo.ContentType, StringComparer.OrdinalIgnoreCase))
