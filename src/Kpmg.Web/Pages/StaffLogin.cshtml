@@ -2,7 +2,9 @@
 @model StaffLoginModel
 @{
     ViewData["Title"] = "Customer service sign in";
-    var returnUrl = Request.Query["ReturnUrl"].ToString();
+    var requestedUrl = Request.Query["ReturnUrl"].ToString();
+    // Only ever echo back a local path, never an attacker supplied absolute URL.
+    var returnUrl = Url.IsLocalUrl(requestedUrl) ? requestedUrl : null;
 }
 
 <h1>Customer service portal</h1>
